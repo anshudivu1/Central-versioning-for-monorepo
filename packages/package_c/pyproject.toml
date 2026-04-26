@@ -1,0 +1,16 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "package-c"
+version = "0.0.0.dev0"
+description = "Sample library C for monorepo version orchestration demo"
+authors = ["Divyanshu Sharma <divyanshu1538.be22@chitkara.edu.in>"]
+readme = "README.md"
+packages = [{ include = "package_c", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+package-a = { path = "../package_a", develop = true }
+package-b = { path = "../package_b", develop = true }

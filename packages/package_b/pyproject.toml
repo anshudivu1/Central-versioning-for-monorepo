@@ -1,0 +1,15 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "package-b"
+version = "0.0.0.dev0"
+description = "Sample library B for monorepo version orchestration demo"
+authors = ["Divyanshu Sharma <divyanshu1538.be22@chitkara.edu.in>"]
+readme = "README.md"
+packages = [{ include = "package_b", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+package-a = { path = "../package_a", develop = true }

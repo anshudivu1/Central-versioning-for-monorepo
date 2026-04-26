@@ -1,0 +1,65 @@
+name: Version Injection Pipeline
+
+# Triggers automatically whenever workspace.yml is updated on main
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "workspace.yml"
+
+  # Allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
+
+jobs:
+  inject-and-build:
+    name: Inject Version & Build Packages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Read release version from workspace.yml
+        id: read_version
+        run: |
+          VERSION=$(python -c "
+          import re, pathlib
+          content = pathlib.Path('workspace.yml').read_text()
+          match = re.search(r'version:\s*[\"\'']?([^\"\''\s]+)[\"\'']?', content)
+          print(match.group(1))
+          ")
+          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Detected release version: $VERSION"
+
+      - name: Inject version into all packages
+        run: |
+          python versioning/inject_version.py
+
+      - name: Install Poetry
+        run: |
+          pip install poetry==1.7.1
+
+      - name: Build package_a
+        working-directory: packages/package_a
+        run: poetry build
+
+      - name: Build package_b
+        working-directory: packages/package_b
+        run: poetry build
+
+      - name: Build package_c
+        working-directory: packages/package_c
+        run: poetry build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ env.RELEASE_VERSION }}
+          path: packages/*/dist/
+          retention-days: 30
